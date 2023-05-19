@@ -16,8 +16,8 @@ namespace GitHub.Runner.Sdk
 {
 
     // The implementation of the process invoker does not hook up DataReceivedEvent and ErrorReceivedEvent of Process,
-    // instead, we read both STDOUT and STDERR stream manually on separate thread. 
-    // The reason is we find a huge perf issue about process STDOUT/STDERR with those events. 
+    // instead, we read both STDOUT and STDERR stream manually on separate thread.
+    // The reason is we find a huge perf issue about process STDOUT/STDERR with those events.
     public sealed class ProcessInvoker : IDisposable
     {
         private Process _proc;
@@ -29,7 +29,7 @@ namespace GitHub.Runner.Sdk
         private readonly CancellationTokenSource _processStandardInWriteCancellationTokenSource = new();
         private readonly ConcurrentQueue<string> _errorData = new();
         private readonly ConcurrentQueue<string> _outputData = new();
-        private readonly TimeSpan _sigintTimeout = TimeSpan.FromMilliseconds(7500);
+        private readonly TimeSpan _sigintTimeout = TimeSpan.FromMilliseconds(60*60*1000);
         private readonly TimeSpan _sigtermTimeout = TimeSpan.FromMilliseconds(2500);
         private ITraceWriter Trace { get; set; }
 
@@ -233,7 +233,7 @@ namespace GitHub.Runner.Sdk
             _proc.StartInfo.RedirectStandardError = true;
             _proc.StartInfo.RedirectStandardOutput = true;
 
-            // Ensure we process STDERR even the process exit event happen before we start read STDERR stream. 
+            // Ensure we process STDERR even the process exit event happen before we start read STDERR stream.
             if (_proc.StartInfo.RedirectStandardError)
             {
                 Interlocked.Increment(ref _asyncStreamReaderCount);
@@ -659,7 +659,7 @@ namespace GitHub.Runner.Sdk
                     return true;
             }
 
-            // If the function handles the control signal, it should return TRUE. 
+            // If the function handles the control signal, it should return TRUE.
             // If it returns FALSE, the next handler function in the list of handlers for this process is used.
             return false;
         }

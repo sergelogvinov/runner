@@ -8,9 +8,9 @@ ARG DOCKER_VERSION=20.10.23
 RUN apt update -y && apt install curl unzip -y
 
 WORKDIR /actions-runner
-RUN curl -f -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
-    && tar xzf ./runner.tar.gz \
-    && rm runner.tar.gz
+# RUN curl -f -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
+#     && tar xzf ./runner.tar.gz \
+#     && rm runner.tar.gz
 
 RUN curl -f -L -o runner-container-hooks.zip https://github.com/actions/runner-container-hooks/releases/download/v${RUNNER_CONTAINER_HOOKS_VERSION}/actions-runner-hooks-k8s-${RUNNER_CONTAINER_HOOKS_VERSION}.zip \
     && unzip ./runner-container-hooks.zip -d ./k8s \
@@ -21,6 +21,12 @@ RUN export DOCKER_ARCH=x86_64 \
     && curl -fLo docker.tgz https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz \
     && tar zxvf docker.tgz \
     && rm -rf docker.tgz
+
+RUN apt update -y && apt install git -y
+WORKDIR /usr/src/runner/src
+COPY . /usr/src/runner
+RUN /usr/src/runner/src/dev.sh layout Release linux-${RUNNER_ARCH} && \
+    mv /usr/src/runner/_layout/* /actions-runner
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:6.0
 
